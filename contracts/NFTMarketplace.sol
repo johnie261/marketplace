@@ -131,5 +131,28 @@ contract NFTMarketplace is ERC721URIStorage {
     }
     return items;
   }
+
+  //nft is transfered to new address if eth sent is equal to price
+  function executeSale(uint256 tokenId) public payable {
+    uint price = idToListedToken[tokenId].price;
+    address seller = idToListedToken[tokenId].seller;
+
+    require(msg.value == price, "Please submit the correct price");
+
+    //Update the details of the token
+    idToListedToken[tokenId].currentlyListed = true;
+    idToListedToken[tokenId].seller = payable(msg.sender);
+    _itemsSold.increment();
+
+    //transfer token to new owner
+    _transfer(address(this), msg.sender, tokenId);
+    //approve marketplace to sell nfts on my behalf
+    approve(address(this), tokenId);
+
+    //transfer the listing fee to the marketplace creator
+    payable(owner).transfer(listPrice);
+    //Transfer the proceeds from the sale to the seller of the NFT
+    payable(seller).transfer(msg.value)
+  }
 }
 
