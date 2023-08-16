@@ -1,22 +1,11 @@
-# Basic NFT Marketplace end to end
-
-This code is for the Tutorial [Build your own NFT Marketplace from Scratch](https://docs.alchemy.com/alchemy/) built by [alchemy.com](https://alchemy.com)
-
-To set up the repository and run the marketplace locally, run the below
-```bash
-git clone https://github.com/OMGWINNING/NFT-Marketplace-Tutorial
-cd NFT-Marketplace-Tutorial
-npm install
-npm start
-```
 
 <a name="readme-top"></a>
-<h1 align='center'> Expense Tracker </h1>
+<h1 align='center'> NFT Marketplace </h1>
 
 # 📗 Table of Contents
 
 - [📗 Table of Contents](#-table-of-contents)
-- [🪙 Expense Tracker ](#-Expense-Tracker)
+- [🪙 NFT Marketplace ](#Marketplace)
   - [🛠 Built With ](#-built-with-)
     - [Tech Stack ](#tech-stack-)
     - [Key Features ](#key-features-)
@@ -35,15 +24,16 @@ npm start
 
 <!-- PROJECT DESCRIPTION -->
 
-# 🥙 MarketPlace <a name="about-project"></a>
+#  MarketPlace <a name="about-project"></a>
 
-EXpense Tracker is a website that allows users to manage personal finances. Featuring secure authentication with Devise. It enables users to create their own expenses for different categories and all financial data remails private and secure.
+This is a NFTs marketplace where one can buy, sell and list an NFT, also a person is able to resell their prized posession
 
 ## 🛠 Built With <a name="built-with"></a>
 
 ### Tech Stack <a name="tech-stack"></a>
 
 <details>
+<summary>Tech stack</summary>
 </ul>
     <li>React</li>
     <li>Ether.js</li>
@@ -58,6 +48,7 @@ EXpense Tracker is a website that allows users to manage personal finances. Feat
     <li>Metamask</li>
     <li>Pinata</li>
     <li>Hardhat</li>
+    <li>Alchemy</li>
   </ul>
 </details>
 
