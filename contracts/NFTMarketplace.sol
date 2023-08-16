@@ -154,5 +154,51 @@ contract NFTMarketplace is ERC721URIStorage {
     //Transfer the proceeds from the sale to the seller of the NFT
     payable(seller).transfer(msg.value);
   }
+
+  // a function to resell the nft again
+  function resellToken(uint256 tokenId, uint256 newPrice) public payable {
+    require(_exists(tokenId), "Token does not exist");
+    require(ownerOf(tokenId) == msg.sender, "Only the owner can resell the token" );
+    require(idToListedToken[tokenId].currentlyListed, "Token is not currently listed");
+
+    //make sure the sender sent enough ETH to pay for thr new listing price
+    require(msg.value == listPrice, "Incorrect listing price");
+
+    idToListedToken[tokenId].price = newPrice;
+
+    emit TokenListedSuccess(
+      tokenId, 
+      ownerOf(tokenId),
+      msg.sender, 
+      newPrice, 
+      true
+    );
+  }
+
+  //update the price for listing a new token on marketplace
+  function updateListPrice(uint256 _listPrice) public payable {
+    require(owner == msg.sender, "Only owner can update listing price");
+    listPrice = _listPrice;
+  }
+
+  function getListPrice() public view returns (uint256) {
+    return listPrice;
+  }
+
+  //getting the latest listing in the marketplace
+  function getLatestIdToListedToken() public view returns (ListedToken memory) {
+    uint256 currentTokenId = _tokenIds.current();
+    return idToListedToken[currentTokenId];
+  }
+  
+  //get a specific listed token given the tokenid
+  function getListedTokenForId(uint256 tokenId) public view returns (ListedToken memory) {
+    return idToListedToken[tokenId];
+  }
+
+  //get current count
+  function getCurrentToken() public view returns (uint256) {
+    return _tokenIds.current();
+  }
 }
 
