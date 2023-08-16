@@ -46,7 +46,7 @@ contract NFTMarketplace is ERC721URIStorage {
   //first time a token is created it is listed here
   function createToken(string memory tokenURI, uint256 price)
     public payable returns (uint) {
-      _tokenIds.increment(); //incrment tokenId counter
+      _tokenIds.increment(); //increment tokenId counter
       uint256 newTokenId = _tokenIds.current();
 
       //Mint the nft with tokenId to the address who called createToken
@@ -62,7 +62,7 @@ contract NFTMarketplace is ERC721URIStorage {
     }
 
   function createListedToken(uint256 tokenId, uint256 price) private {
-    //make sure sender senr enought ETH to pay for listing
+    //make sure sender sent enought ETH to pay for listing
     require(msg.value == listPrice, "Please sent the correct price");
     require(price > 0, "Make sure price isnt negative");
 
@@ -87,6 +87,49 @@ contract NFTMarketplace is ERC721URIStorage {
     );
   }
 
+  //This will return all NFTs currently listed to be sold in marketPlace
+  function getAllNFTs() public view returns (ListedToken[] memory) {
+    uint nftCount = _tokenIds.current();
+    ListedToken[] memory tokens = new ListedToken[](nftCount);
+    uint currentIndex = 0;
 
+    //currentlyListed is true for all
+    for (uint i=0; i<nftCount; i++) {
+      uint currentId = i + 1;
+      ListedToken storage currentItem = idToListedToken[currentId];
+      tokens[currentIndex] = currentItem;
+      currentIndex += 1;
+    }
+
+    // tokens has the list of all available NFTs in the marketPlace
+    return tokens;
+  }
+
+  //returns all the NFTs that the current user is owner or seller
+  function getMyNFTs() public view returns (ListedToken[] memory) {
+    uint totalItemCount = _tokenIds.current();
+    uint itemCount = 0;
+    uint currentIndex = 0;
+
+    //get count of all the NFTd belonging to the current user
+    for(uint i=0; i<totalItemCount; i++) {
+      if(idToListedToken[i+1].owner == msg.sender || idToListedToken[i+1].seller == msg.sender){
+        itemCount += 1;
+      }
+    }
+
+    //create an array and store all nfts in it
+    ListedToken[] memory items = new ListedToken[](itemCount);
+
+    for(uint i=0; i<totalItemCount; i++){
+      if(idToListedToken[i+1].owner == msg.sender || idToListedToken[i+1].seller == msg.sender){
+        uint currentId = i + 1;
+        ListedToken storage currentItem = idToListedToken[currentId];
+        items[currentIndex] = currentItem;
+        currentIndex += 1;
+      }  
+    }
+    return items;
+  }
 }
 
