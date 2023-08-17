@@ -4,6 +4,7 @@ import MarketplaceJSON from "../Marketplace.json";
 import axios from "axios";
 import { useState } from "react";
 import { GetIpfsUrlFromPinata } from "../utils";
+import { ethers } from "ethers";
 
 export default function Marketplace() {
 const sampleData = [
@@ -36,6 +37,44 @@ const sampleData = [
     },
 ];
 const [data, updateData] = useState(sampleData);
+const [dataFetched, updateFetched] = useState(false);
+
+const getAllNFTs = async() => {
+  const provider = new ethers.providers.Web3Provider(window.ethereum);
+  const signer = provider.getSigner();
+  //Pull the deployed contract instance
+  let contract = new ethers.Contract(MarketplaceJSON.address, MarketplaceJSON.abi, signer)
+  //create an NFT Token
+  let transaction = await contract.getAllNFTs()
+
+  //fetch all data of every NFT
+  const items = await Promise.all(
+    transaction.map(async(i) => {
+      let tokenURI = await contract.tokenURI(i.tokenId);
+      tokenURI = GetIpfsUrlFromPinata(tokenURI)
+      let meta = await axios.get(tokenURI)
+      meta = meta.data
+      
+      let price = ethers.utils.formatUnits(i.price.toString(), 'ether');
+      let item = {
+        price,
+        tokenId: i.tokenId.toNumber,
+        seller: i.seller,
+        owner: i.owner,
+        image: meta.image,
+        name: meta.name,
+        description: meta.description,
+      }
+      return item
+    })
+  )
+  updateFetched(true)
+  updateData(items)
+}
+
+if(!dataFetched) {
+  getAllNFTs();
+}
 
 return (
     <div>
