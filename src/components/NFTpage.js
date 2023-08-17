@@ -3,15 +3,25 @@ import axie from "../tile.jpeg";
 import { useLocation, useParams } from 'react-router-dom';
 import MarketplaceJSON from "../Marketplace.json";
 import axios from "axios";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { GetIpfsUrlFromPinata } from "../utils";
 import { ethers } from "ethers";
+import { contractABI, contractAddress } from "../lib/constant";
 
 export default function NFTPage (props) {
 
 const [data, updateData] = useState({});
 const [message, updateMessage] = useState("");
 const [currAddress, updateCurrAddress] = useState("0x");
+const [dataFetched, updateDataFetched] = useState(false)
+
+const { tokenId } = useParams()
+
+// useEffect(() => {
+//   if (!dataFetched) {
+//     getNFTData();
+//   }
+// }, [dataFetched])
 
 const getNFTData = async(tokenId) => {
   const provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -19,7 +29,10 @@ const getNFTData = async(tokenId) => {
   const addr = await signer.getAddress();
 
   //Pull the deployed contract instance
-  let contract = new ethers.Contract(MarketplaceJSON.address, MarketplaceJSON.abi, signer)
+  
+  //let contract = new ethers.Contract(MarketplaceJSON.address, MarketplaceJSON.abi, signer)
+  let contract = new ethers.Contract(contractAddress, contractABI, signer)
+
   //create an NFT Token
   var tokenURI = await contract.tokenURI(tokenId);
   const listedToken = await contract.getListedTokenForId(tokenId);
@@ -37,14 +50,12 @@ const getNFTData = async(tokenId) => {
     name: meta.name,
     description: meta.description,
   }
-    console.log(item);
     updateData(item);
     updateDataFetched(true);
-    console.log("address", addr)
     updateCurrAddress(addr);
 }
 
-const buyNFT = async(tokenId) => {
+const buyNFT = async() => {
 try {
   const provider = new ethers.providers.Web3Provider(window.ethereum);
   const signer = provider.getSigner();
@@ -64,8 +75,8 @@ try {
   alert("UPload Error" + e)   
   }
 
-  const params = useParams()
-  const tokenId = params.tokenId
+  // const { tokenId } = useParams();
+
   if(!dataFetched) {
     getNFTData(tokenId)
   }
@@ -97,7 +108,7 @@ try {
                     </div>
                     <div>
                     { currAddress != data.owner && currAddress != data.seller ?
-                        <button className="enableEthereumButton bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-sm" onClick={() => buyNFT(tokenId)}>Buy this NFT</button>
+                        <button className="enableEthereumButton bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-sm" onClick={buyNFT}>Buy this NFT</button>
                         : <div className="text-emerald-700">You are the owner of this NFT</div>
                     }
                     

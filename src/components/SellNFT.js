@@ -4,11 +4,11 @@ import { uploadFileToIPFS, uploadJSONToIPFS } from "../pinata";
 import Marketplace from '../Marketplace.json';
 import { useLocation } from "react-router";
 import { ethers } from "ethers";
+import { contractABI, contractAddress } from "../lib/constant";
 
 export default function SellNFT () {
     const [formParams, updateFormParams] = useState({ name: '', description: '', price: ''});
     const [fileURL, setFileURL] = useState(null);
-    const ethers = require("ethers");
     const [message, updateMessage] = useState('');
     const location = useLocation();
 
@@ -16,14 +16,14 @@ export default function SellNFT () {
       const listButton = document.getElementById("list-button");
       listButton.disable= true;
       listButton.style.background = "grey";
-      list.style.opacity = 0.3;
+      listButton.style.opacity = 0.3;
     }
 
     const enableButton = async() => {
       const listButton = document.getElementById("list-button");
       listButton.disable= false;
       listButton.style.background = "A500FF";
-      list.style.opacity = 1;
+      listButton.style.opacity = 1;
     }
 
     //function to upload NFT image to ipfs
@@ -32,7 +32,7 @@ export default function SellNFT () {
       try {
         //upload file to ipfs
         disableButton();
-        updateMessage("Uploading image.. please dont click anything")
+        //updateMessage("Uploading image.. please dont click anything")
         const response = await uploadFileToIPFS(file);
         if(response.success) {
           enableButton()
@@ -45,7 +45,8 @@ export default function SellNFT () {
       }
     }
 
-    const uploadJSONToIPFS = async() => {
+
+    const uploadMetadataToIPFS = async() => {
       const {name, description, price} = formParams;
     
       if(!name || !description || !price | fileURL) {
@@ -84,14 +85,16 @@ export default function SellNFT () {
        const provider = new ethers.providers.Web3Provider(window.ethereum);
        const signer = provider.getSigner();
        disableButton()
-       updateMessage("Uploading NFT(takes 5 mins).. please dont click anything!")
+       updateMessage("Uploading NFT(takes 5 mins).. please don't click anything!")
 
        //get the deployed contract instance
-       let contract = new ethers.Contract(
-          Marketplace.address,
-          Marketplace.abi,
-          signer
-       )
+      //  let contract = new ethers.Contract(
+      //     Marketplace.address,
+      //     Marketplace.abi,
+      //     signer
+      //  )
+
+      let contract = new ethers.Contract(contractAddress, contractABI, signer)
 
        //edit the message to be sent to create NFT request
        const price = ethers.utils.parseUnits(formParams.price, 'ether');
@@ -99,7 +102,7 @@ export default function SellNFT () {
        listingPrice = listingPrice.toString()
 
        //actually creating an NFT
-       let transaction = await contract.createToken(metadataURL, { value: listingPrice})
+       let transaction = await contract.createToken(metadataURL, price, { value: listingPrice})
        await transaction.wait()
 
        alert('Successfully listed NFT!')
@@ -132,11 +135,11 @@ export default function SellNFT () {
                 </div>
                 <div>
                     <label className="block text-purple-500 text-sm font-bold mb-2" htmlFor="image">Upload Image (&lt;500 KB)</label>
-                    <input type={"file"} onChange={""}></input>
+                    <input type={"file"} onChange={onChangeFile}></input>
                 </div>
                 <br></br>
                 <div className="text-red-500 text-center">{message}</div>
-                <button onClick={""} className="font-bold mt-10 w-full bg-purple-500 text-white rounded p-2 shadow-lg" id="list-button">
+                <button onClick={listNFT} className="font-bold mt-10 w-full bg-purple-500 text-white rounded p-2 shadow-lg" id="list-button">
                     List NFT
                 </button>
             </form>

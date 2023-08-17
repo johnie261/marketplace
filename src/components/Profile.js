@@ -5,6 +5,7 @@ import axios from "axios";
 import { useState } from "react";
 import NFTTile from "./NFTTile";
 import { ethers } from "ethers";
+import { contractABI, contractAddress } from "../lib/constant";
 
 export default function Profile () {
     const [data, updateData] = useState([]);
@@ -20,7 +21,9 @@ export default function Profile () {
       const addr = await signer.getAddress()
 
       //Pull the deployed contract instance
-      let contract = new ethers.Contract(MarketplaceJSON.address, MarketplaceJSON.abi, signer)
+      
+      //let contract = new ethers.Contract(MarketplaceJSON.address, MarketplaceJSON.abi, signer)
+      let contract = new ethers.Contract(contractAddress, contractABI, signer)
 
       //create an NFT Token
       let transaction = await contract.getMyNFTs()
