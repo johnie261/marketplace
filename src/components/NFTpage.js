@@ -5,12 +5,44 @@ import MarketplaceJSON from "../Marketplace.json";
 import axios from "axios";
 import { useState } from "react";
 import { GetIpfsUrlFromPinata } from "../utils";
+import { ethers } from "ethers";
 
 export default function NFTPage (props) {
 
 const [data, updateData] = useState({});
 const [message, updateMessage] = useState("");
 const [currAddress, updateCurrAddress] = useState("0x");
+
+const getNFTData = async(tokenId) => {
+  const provider = new ethers.providers.Web3Provider(window.ethereum);
+  const signer = provider.getSigner();
+  const addr = await signer.getAddress();
+
+  //Pull the deployed contract instance
+  let contract = new ethers.Contract(MarketplaceJSON.address, MarketplaceJSON.abi, signer)
+  //create an NFT Token
+  var tokenURI = await contract.tokenURI(tokenId);
+  const listedToken = await contract.getListedTokenForId(tokenId);
+  tokenURI = GetIpfsUrlFromPinata(tokenURI);
+  let meta = await axios.get(tokenURI);
+  meta = meta.data;
+  console.log(listedToken);
+
+  let item = {
+    price: meta.price,
+    tokenId: tokenId,
+    seller: listedToken.seller,
+    owner: listedToken.owner,
+    image: meta.image,
+    name: meta.name,
+    description: meta.description,
+  }
+    console.log(item);
+    updateData(item);
+    updateDataFetched(true);
+    console.log("address", addr)
+    updateCurrAddress(addr);
+}
 
     return(
         <div style={{"min-height":"100vh"}}>
