@@ -3,6 +3,7 @@ import { useState } from "react";
 import { uploadFileToIPFS, uploadJSONToIPFS } from "../pinata";
 import Marketplace from '../Marketplace.json';
 import { useLocation } from "react-router";
+import { ethers } from "ethers";
 
 export default function SellNFT () {
     const [formParams, updateFormParams] = useState({ name: '', description: '', price: ''});
@@ -68,6 +69,46 @@ export default function SellNFT () {
         }
       } catch (error) {
         console.log("error uploading JSON metadata: ", error)
+      }
+    }
+
+    const listNFT = async(e) => {
+      e.preventDefault();
+
+      //upload data to ipfs
+      try {
+       const metadataURL = await uploadMetadataToIPFS();
+       if (metadataURL === -1) return;
+
+       //get providers and signers
+       const provider = new ethers.providers.Web3Provider(window.ethereum);
+       const signer = provider.getSigner();
+       disableButton()
+       updateMessage("Uploading NFT(takes 5 mins).. please dont click anything!")
+
+       //get the deployed contract instance
+       let contract = new ethers.Contract(
+          Marketplace.address,
+          Marketplace.abi,
+          signer
+       )
+
+       //edit the message to be sent to create NFT request
+       const price = ethers.utils.parseUnits(formParams.price, 'ether');
+       let listingPrice = await contract.getListPrice();
+       listingPrice = listingPrice.toString()
+
+       //actually creating an NFT
+       let transaction = await contract.createToken(metadataURL, { value: listingPrice})
+       await transaction.wait()
+
+       alert('Successfully listed NFT!')
+       enableButton()
+       updateMessage('')
+       updateFormParams({ name: '', description: '', price: ''});
+       window.location.replace("/")
+      } catch (error) {
+        alert("Upload error" + error)
       }
     }
 
