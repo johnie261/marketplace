@@ -11,6 +11,66 @@ export default function SellNFT () {
     const [message, updateMessage] = useState('');
     const location = useLocation();
 
+    const disableButton = async() => {
+      const listButton = document.getElementById("list-button");
+      listButton.disable= true;
+      listButton.style.background = "grey";
+      list.style.opacity = 0.3;
+    }
+
+    const enableButton = async() => {
+      const listButton = document.getElementById("list-button");
+      listButton.disable= false;
+      listButton.style.background = "A500FF";
+      list.style.opacity = 1;
+    }
+
+    //function to upload NFT image to ipfs
+    const onChangeFile = async(e) => {
+      let file = e.target.files[0];
+      try {
+        //upload file to ipfs
+        disableButton();
+        updateMessage("Uploading image.. please dont click anything")
+        const response = await uploadFileToIPFS(file);
+        if(response.success) {
+          enableButton()
+          updateMessage("")
+          console.log("Uploaded image to pinata: ", response.pinataURL)
+          setFileURL(response.pinataURL)
+        }
+      } catch (error) {
+        console.log("Error during file upload", error)
+      }
+    }
+
+    const uploadJSONToIPFS = async() => {
+      const {name, description, price} = formParams;
+    
+      if(!name || !description || !price | fileURL) {
+        updateMessage("PLease fill all the fields")
+        return -1;
+      }
+
+      const nftJSON = {
+        name,
+        description,
+        price,
+        image: fileURL
+      }
+
+      try {
+        // upload metadata json to ipfs
+        const response = await uploadJSONToIPFS(nftJSON)
+        if(response.success === true) {
+          console.log("Upload JSON to Pinata: ", response)
+          return response.pinataURL
+        }
+      } catch (error) {
+        console.log("error uploading JSON metadata: ", error)
+      }
+    }
+
     return (
         <div className="">
         <Navbar></Navbar>
