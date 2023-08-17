@@ -44,6 +44,36 @@ const getNFTData = async(tokenId) => {
     updateCurrAddress(addr);
 }
 
+const buyNFT = async(tokenId) => {
+try {
+  const provider = new ethers.providers.Web3Provider(window.ethereum);
+  const signer = provider.getSigner();
+
+  //Pull the deployed contract instance
+  let contract = new ethers.Contract(MarketplaceJSON.address, MarketplaceJSON.abi, signer);
+  const salePrice = ethers.utils.parseUnits(data.price, 'ether')
+  updateMessage("Buying the NFT... Please Wait (Upto 5 mins)")
+
+  //run execute sale function
+  let transaction = await contract.executeSale(tokenId, {value:salePrice})
+  await transaction.wait();
+
+  alert("'You successfully bought the NFT");
+  updateMessage("")
+} catch (e) {
+  alert("UPload Error" + e)   
+  }
+
+  const params = useParams()
+  const tokenId = params.tokenId
+  if(!dataFetched) {
+    getNFTData(tokenId)
+  }
+  if(typeof data.image == "string") {
+    data.image = GetIpfsUrlFromPinata(data.image);
+  }
+}
+
     return(
         <div style={{"min-height":"100vh"}}>
             <Navbar></Navbar>
