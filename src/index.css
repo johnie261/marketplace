@@ -22,6 +22,7 @@ body {
   animation-play-state: running;
   animation-name: gradientTransform;
   background-repeat: no-repeat;
+  overflow-x: hidden;
 }
 
 code {

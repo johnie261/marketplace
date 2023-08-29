@@ -3,87 +3,71 @@ import axie from "../tile.jpeg";
 import { useLocation, useParams } from 'react-router-dom';
 import MarketplaceJSON from "../Marketplace.json";
 import axios from "axios";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { GetIpfsUrlFromPinata } from "../utils";
-import { ethers } from "ethers";
-import { contractABI, contractAddress } from "../lib/constant";
 
 export default function NFTPage (props) {
 
 const [data, updateData] = useState({});
+const [dataFetched, updateDataFetched] = useState(false);
 const [message, updateMessage] = useState("");
 const [currAddress, updateCurrAddress] = useState("0x");
-const [dataFetched, updateDataFetched] = useState(false)
 
-const { tokenId } = useParams()
+async function getNFTData(tokenId) {
+    const ethers = require("ethers");
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    const signer = provider.getSigner();
+    const addr = await signer.getAddress();
+    let contract = new ethers.Contract(MarketplaceJSON.address, MarketplaceJSON.abi, signer)
+    var tokenURI = await contract.tokenURI(tokenId);
+    const listedToken = await contract.getListedTokenForId(tokenId);
+    tokenURI = GetIpfsUrlFromPinata(tokenURI);
+    let meta = await axios.get(tokenURI);
+    meta = meta.data;
+    console.log(listedToken);
 
-// useEffect(() => {
-//   if (!dataFetched) {
-//     getNFTData();
-//   }
-// }, [dataFetched])
-
-const getNFTData = async(tokenId) => {
-  const provider = new ethers.providers.Web3Provider(window.ethereum);
-  const signer = provider.getSigner();
-  const addr = await signer.getAddress();
-
-  //Pull the deployed contract instance
-  
-  //let contract = new ethers.Contract(MarketplaceJSON.address, MarketplaceJSON.abi, signer)
-  let contract = new ethers.Contract(contractAddress, contractABI, signer)
-
-  //create an NFT Token
-  var tokenURI = await contract.tokenURI(tokenId);
-  const listedToken = await contract.getListedTokenForId(tokenId);
-  tokenURI = GetIpfsUrlFromPinata(tokenURI);
-  let meta = await axios.get(tokenURI);
-  meta = meta.data;
-  console.log(listedToken);
-
-  let item = {
-    price: meta.price,
-    tokenId: tokenId,
-    seller: listedToken.seller,
-    owner: listedToken.owner,
-    image: meta.image,
-    name: meta.name,
-    description: meta.description,
-  }
+    let item = {
+        price: meta.price,
+        tokenId: tokenId,
+        seller: listedToken.seller,
+        owner: listedToken.owner,
+        image: meta.image,
+        name: meta.name,
+        description: meta.description,
+    }
+    console.log(item);
     updateData(item);
     updateDataFetched(true);
+    console.log("address", addr)
     updateCurrAddress(addr);
 }
 
-const buyNFT = async() => {
-try {
-  const provider = new ethers.providers.Web3Provider(window.ethereum);
-  const signer = provider.getSigner();
+async function buyNFT(tokenId) {
+    try {
+        const ethers = require("ethers");
+        const provider = new ethers.providers.Web3Provider(window.ethereum);
+        const signer = provider.getSigner();
 
-  //Pull the deployed contract instance
-  let contract = new ethers.Contract(MarketplaceJSON.address, MarketplaceJSON.abi, signer);
-  const salePrice = ethers.utils.parseUnits(data.price, 'ether')
-  updateMessage("Buying the NFT... Please Wait (Upto 5 mins)")
+        let contract = new ethers.Contract(MarketplaceJSON.address, MarketplaceJSON.abi, signer);
+        const salePrice = ethers.utils.parseUnits(data.price, 'ether')
+        updateMessage("Buying the NFT... Please Wait (Upto 5 mins)")
+        let transaction = await contract.executeSale(tokenId, {value:salePrice});
+        await transaction.wait();
 
-  //run execute sale function
-  let transaction = await contract.executeSale(tokenId, {value:salePrice})
-  await transaction.wait();
-
-  alert("'You successfully bought the NFT");
-  updateMessage("")
-} catch (e) {
-  alert("UPload Error" + e)   
-  }
-
-  // const { tokenId } = useParams();
-
-  if(!dataFetched) {
-    getNFTData(tokenId)
-  }
-  if(typeof data.image == "string") {
-    data.image = GetIpfsUrlFromPinata(data.image);
-  }
+        alert('You successfully bought the NFT!');
+        updateMessage("");
+    }
+    catch(e) {
+        alert("Upload Error"+e)
+    }
 }
+
+    const params = useParams();
+    const tokenId = params.tokenId;
+    if(!dataFetched)
+        getNFTData(tokenId);
+    if(typeof data.image == "string")
+        data.image = GetIpfsUrlFromPinata(data.image);
 
     return(
         <div style={{"min-height":"100vh"}}>
@@ -108,7 +92,7 @@ try {
                     </div>
                     <div>
                     { currAddress != data.owner && currAddress != data.seller ?
-                        <button className="enableEthereumButton bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-sm" onClick={buyNFT}>Buy this NFT</button>
+                        <button className="enableEthereumButton bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-sm" onClick={() => buyNFT(tokenId)}>Buy this NFT</button>
                         : <div className="text-emerald-700">You are the owner of this NFT</div>
                     }
                     

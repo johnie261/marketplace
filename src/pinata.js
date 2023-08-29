@@ -89,3 +89,14 @@ export const uploadFileToIPFS = async(file) => {
 
     });
 };
+
+
+
+
+
+
+// const key = "c42e16355c6649a82d8f";
+// const secret = "a37c46030fdc0f4e99c9b7284723c9f89d79129552d8379812f7d92878e7576a"
+// const JWT = process.env.REACT_APP_PINATA_JWT
+
+

@@ -56,26 +56,6 @@ const connectWebsite = async () => {
   }
 };
 
-
-// const connectWebsite = async() => {
-//   console.log(window.ethereum)
-//   const chainId = await window.ethereum.request({ method: 'eth_chainId' });
-//   if (chainId !== "11155111") {
-//     // await window.ethereum.request({
-//     //   method: 'wallet_switchEthereumChain',
-//     //   params: [{ chainId: "11155111"}]
-//     // })
-//     alert("connect to sepolia network")
-//   }
-
-//   await window.ethereum.request({ method: 'eth_requestAccounts' })
-//     .then(() => {
-//       updateButton();
-//       getAddress();
-//       window.location.replace(location.pathname)
-//     })
-// }
-
 useEffect(() => {
   if(window.ethereum == undefined) {
     return;
@@ -99,7 +79,6 @@ useEffect(() => {
           <ul className='flex items-end justify-between py-3 bg-transparent text-white pr-5'>
           <li className='flex items-end ml-5 pb-2'>
             <Link to="/">
-            {/* <img src={fullLogo} alt="" width={120} height={120} className="inline-block -mt-2"/> */}
             <div className='inline-block font-bold text-xl ml-2'>
               NFT Marketplace
             </div>
